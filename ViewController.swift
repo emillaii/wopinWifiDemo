@@ -57,9 +57,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     //Mqtt Client
     var mqtt: CocoaMQTT?
-    let defaultHost = "wifi.h2popo.com"
-    //let deviceId = "demo"
-    let topic = "demo"
+    let defaultHost = wopinMqttServer
+    let topic = wopinMqttTopic
     
     @IBOutlet weak var redColor: UITextField!
     @IBOutlet weak var greenColor: UITextField!
@@ -68,8 +67,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func mqttSetting() {
         let clientID = "iOS"
         mqtt = CocoaMQTT(clientID: clientID, host: defaultHost, port: 8083)
-        mqtt!.username = "wopin"
-        mqtt!.password = "wopinH2popo"
+        mqtt!.username = wopinMqttUsername
+        mqtt!.password = wopinMqttPassword
         mqtt!.keepAlive = 60
         mqtt!.delegate = self
         mqtt?.connect()
@@ -84,7 +83,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         let g = Int(greenColor.text!)
         let b = Int(blueColor.text!)
         let code = wopinWifiLEDCommand(r: r!, g: g!, b: b!)
-        mqtt?.publish("demo", withString: code)
+        mqtt?.publish(wopinMqttTopic, withString: code)
     }
     
     lazy var readerVC: QRCodeReaderViewController = {
@@ -223,9 +222,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                        "ssid" : ssid,
                        "password" : password]
         
-        let postString = "ssid:EmilWin\npassword:Laikwoktai" //ToDo: Cannot send the post data???
+        let postString = "" //ToDo: Cannot send the post data??? So add the info in header first...
         
-        var request = URLRequest(url: URL(string: "http://172.16.0.1/wifi")!)
+        var request = URLRequest(url: URL(string: wopinWifiURL)!)
         
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = headers as? [String : String]
@@ -239,11 +238,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 let httpResponse = response as? HTTPURLResponse
                 print(httpResponse ?? "")
                 let httpResponseData = String(data: data!, encoding: .utf8)
-                print(httpResponseData ?? "")
-                if (httpResponseData?.contains("Connected"))!
-                {
-                    self.showSuccess(msg: "Device")
+                do {
+                    let ra = try JSONDecoder().decode(WifiResponse.self, from: (httpResponseData?.data(using: .utf8)!)!)
+                    print(ra.status)
+                    print(ra.deviceId)
+                    if (ra.status == "Connected")
+                    {
+                        self.showSuccess(msg: "Device " + ra.deviceId)
+                    }
+                } catch {
+                    print(error)
                 }
+                
             }
         })
         
@@ -272,7 +278,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         let postString = "" //ToDo: Cannot send the post data???
         
-        var request = URLRequest(url: URL(string: "http://172.16.0.1/wifi")!)
+        var request = URLRequest(url: URL(string: wopinWifiURL)!)
         
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = headers

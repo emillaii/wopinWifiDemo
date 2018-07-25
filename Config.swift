@@ -8,4 +8,12 @@
 
 import Foundation
 
-let wopinURL = "http://172.16.0.1/wopin_wifi"
+//ESP8266 Device Related
+let wopinWifiURL = "http://172.16.0.1/wopin_wifi"
+
+//MQTT Related
+
+let wopinMqttServer = "wifi.h2popo.com"
+let wopinMqttUsername = "wopin"
+let wopinMqttPassword = "wopinH2popo"
+let wopinMqttTopic = "demo"          // This is temporary use for demo purpose

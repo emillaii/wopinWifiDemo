@@ -25,6 +25,15 @@ struct WifiScanResult: Codable {
     }
 }
 
+struct WifiResponse: Codable {
+    let deviceId: String
+    let status: String
+    private enum CodingKeys: String, CodingKey {
+        case deviceId = "device_id"
+        case status = "status"
+    }
+}
+
 func getWifiSsid() -> String? {
     var ssid: String?
     if let interfaces = CNCopySupportedInterfaces() as NSArray? {
